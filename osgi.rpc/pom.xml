@@ -9,7 +9,7 @@
 
 	<parent>
 		<groupId>org.oiue.services</groupId>
-		<artifactId>interfaces</artifactId>
+		<artifactId>services</artifactId>
 		<version>1.0.0</version>
 	</parent>
 	
