@@ -14,7 +14,6 @@ import org.oiue.service.osgi.MulitServiceTracker;
 import org.oiue.service.osgi.SystemMulitServiceTrackerCustomizer;
 import org.oiue.service.osgi.proxy.ServicesManager;
 import org.oiue.tools.string.StringUtil;
-
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -40,46 +39,50 @@ public class Activator implements BundleActivator {
 		public void updated(final Dictionary<String, ?> props) throws ConfigurationException {
 
 			new Thread(this.getClass().getName()) {
+				@Override
 				public void run() {
 					System.out.println("not start services:" + ServicesManager.getRpcServices());
 
-					boolean startRpc = StringUtil.isTrue(props.get("startRpc") + "");
-					boolean shareService = StringUtil.isTrue(props.get("shareService") + "");
-					if (startRpc)
-						try {
-							String local = props.get("localURL") + "";
-							String path = props.get("rootPath") + "";
-							int rpcPort = Integer.valueOf(props.get("rpcPort") + "");
-							if (StringUtil.isEmptys(path) || StringUtil.isEmptys(local)) {
-								throw new RuntimeException("config localURL and rootPath not null!");
+					if (props != null) {
+						boolean startRpc = StringUtil.isTrue(props.get("startRpc") + "");
+						boolean shareService = StringUtil.isTrue(props.get("shareService") + "");
+						if (startRpc)
+							try {
+								String local = props.get("localURL") + "";
+								String path = props.get("rootPath") + "";
+								int rpcPort = Integer.valueOf(props.get("rpcPort") + "");
+								if (StringUtil.isEmptys(path) || StringUtil.isEmptys(local)) {
+									throw new RuntimeException("config localURL and rootPath not null!");
+								}
+								path = path.endsWith("/") ? path : path + "/";
+								RPCService rpc = new RPCServiceImpl();
+								URLClassLoader uc = (URLClassLoader) ClassLoader.getSystemClassLoader();
+								Method add = URLClassLoader.class.getDeclaredMethod("addURL", new Class[] { URL.class });
+								add.setAccessible(true);
+								add.invoke(uc, new Object[] { RPCService.class.getProtectionDomain().getCodeSource().getLocation() });
+
+								String url = "rmi://" + local + ":" + rpcPort + "/RPCService";
+								LocateRegistry.createRegistry(rpcPort);
+								// System.setSecurityManager(new
+								// RMISecurityManager());
+								Naming.rebind(url, rpc);
+								// cacheTreeService.delete(path.substring(0,
+								// path.length()-1), 0);
+
+								cacheTreeService.createTemp(path + "ServerStatus/" + local.replace(".", "_"), local);
+								ServicesManager.registerRPC(cacheTreeService, path, local);
+
+								System.out.println("start all service:" + ServicesManager.getAllService());
+								System.out.println("start all local service:" + ServicesManager.getAllStartService());
+								System.out.println("start all relation service:" + ServicesManager.getRelationService());
+
+							} catch (Throwable e) {
+								e.printStackTrace();
 							}
-							path = path.endsWith("/") ? path : path + "/";
-							RPCService rpc = new RPCServiceImpl();
-							URLClassLoader uc = (URLClassLoader) ClassLoader.getSystemClassLoader();
-							Method add = URLClassLoader.class.getDeclaredMethod("addURL", new Class[] { URL.class });
-							add.setAccessible(true);
-							add.invoke(uc, new Object[] { RPCService.class.getProtectionDomain().getCodeSource().getLocation() });
-
-							String url = "rmi://" + local + ":" + rpcPort + "/RPCService";
-							LocateRegistry.createRegistry(rpcPort);
-							// System.setSecurityManager(new RMISecurityManager());
-							Naming.rebind(url, rpc);
-							// cacheTreeService.delete(path.substring(0, path.length()-1), 0);
-
-							cacheTreeService.createTemp(path + "ServerStatus/" + local.replace(".", "_"), local);
-							ServicesManager.registerRPC(cacheTreeService, path, local);
-
-							System.out.println("start all service:" + ServicesManager.getAllService());
-							System.out.println("start all local service:" + ServicesManager.getAllStartService());
-							System.out.println("start all relation service:" + ServicesManager.getRelationService());
-
-						} catch (Throwable e) {
-							e.printStackTrace();
-						}
-					if (shareService)
-						ServicesManager.startRPC(cacheTreeService, context, props);
-
-				};
+						if (shareService)
+							ServicesManager.startRPC(cacheTreeService, context, props);
+					}
+				}
 			}.start();
 		}
 	}
@@ -88,13 +91,8 @@ public class Activator implements BundleActivator {
 	public void start(final BundleContext context) throws Exception {
 		this.context = context;
 		context.addBundleListener(new BundleListener() {
-
 			@Override
-			public void bundleChanged(BundleEvent be) {
-				// TODO Auto-generated method stub
-				// System.out.println("bundleChanged:[" + be.getType() + "]" +
-				// be);
-			}
+			public void bundleChanged(BundleEvent be) {}
 		});
 
 		context.addServiceListener(new ServiceListener() {
@@ -156,6 +154,8 @@ public class Activator implements BundleActivator {
 					} catch (Throwable e) {
 						e.printStackTrace();
 					}
+
+					System.out.println("not start services:" + ServicesManager.getRpcServices());
 					System.out.println("start RPC over");
 					break;
 

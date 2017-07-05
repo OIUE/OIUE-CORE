@@ -3,13 +3,13 @@
 
 	<artifactId>org.oiue.service.log</artifactId>
 	<packaging>bundle</packaging>
- 	<version>1.0.0</version>
  	
 	<name>OIUE service for log </name>
 	<description>OIUE service for log </description>
 	
 	<properties>
 		<project.activator></project.activator>
+		<project.import>org.oiue.service.osgi,net.sf.cglib.proxy,net.sf.cglib.core</project.import>
 	</properties>
 
 	<parent>

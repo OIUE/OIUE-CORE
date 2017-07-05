@@ -1,19 +1,25 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.oiue</groupId>
+		<artifactId>oiue</artifactId>
+		<version>1.0.0</version>
+	</parent>
+	<groupId>org.oiue.services</groupId>
 	<artifactId>org.oiue.service.osgi.rpc</artifactId>
-	
+
 	<packaging>bundle</packaging>
 
 	<name>OIUE service for OSGI RPC Service </name>
 	<description>A bundle that managed service and rpc servic by OSGI </description>
 
-	<parent>
-		<groupId>org.oiue.services</groupId>
-		<artifactId>services</artifactId>
-		<version>1.0.0</version>
-	</parent>
-	
 	<dependencies>
+		<dependency>
+			<groupId>org.neo4j.driver</groupId>
+			<artifactId>neo4j-java-driver</artifactId>
+			<version>1.0.3</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.felix</groupId>
 			<artifactId>org.apache.felix.main</artifactId>
@@ -25,17 +31,99 @@
 			<version>1.8.8</version>
 		</dependency>
 		<dependency>
-			<groupId>org.oiue.tools</groupId>
-			<artifactId>org.oiue.tools</artifactId>
-			<version>1.0.0</version>
+			<groupId>org.oiue</groupId>
+			<artifactId>tools</artifactId>
+			<version>${tools.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.oiue.services</groupId>
 			<artifactId>org.oiue.service.cache.tree</artifactId>
-			<version>1.0.0</version>
+			<version>${cache.tree.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>ant-contrib</groupId>
+			<artifactId>ant-contrib</artifactId>
+			<version>1.0b3</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<properties>
 		<project.activator>${artifactId}.Activator</project.activator>
 	</properties>
+	<build>
+		<plugins>
+			<!-- 打包bundle文件为bundle.jar文件 -->
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+						<X-bundle-Version>${project.version}</X-bundle-Version>
+						<Bundle-Activator>${project.activator}</Bundle-Activator>
+						<Bundle-Name>${project.name}</Bundle-Name>
+						<Bundle-ManifestVersion>2</Bundle-ManifestVersion>
+						<Bundle-Description>${project.description}</Bundle-Description>
+						<Bundle-Vendor>www.oiue.org</Bundle-Vendor>
+						<Embed-Transitive>true</Embed-Transitive>
+						<Embed-Dependency>neo4j-java-driver;scope=compile|runtime</Embed-Dependency>
+						<Embed-Directory>lib</Embed-Directory>
+						<Embed-StripGroup>true</Embed-StripGroup>
+					</instructions>
+				</configuration>
+			</plugin>
+			<!-- 打包source文件为jar文件 -->
+			<plugin>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.1</version>
+				<configuration>
+					<attach>true</attach>
+					<encoding>UTF-8</encoding>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- 将打包的bundle文件拷贝到项目的bundle目录 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-lib-bundle</id>
+						<phase>package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<tasks>
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties"
+									classpathref="maven.runtime.classpath" />
+								<if>
+									<contains string="${project.packaging}" substring="bundle" />
+									<then>
+										<copy todir="${project.build.exportdir}">
+											<fileset dir="${project.basedir}/target">
+												<include name="*.?.jar" />
+											</fileset>
+										</copy>
+									</then>
+								</if>
+							</tasks>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>
