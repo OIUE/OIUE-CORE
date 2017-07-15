@@ -15,7 +15,7 @@
 	<parent>
 		<groupId>org.oiue.services</groupId>
 		<artifactId>interfaces</artifactId>
-		<version>1.0.0</version><relativePath></relativePath>
+		<version>1.0.1</version><relativePath></relativePath>
 	</parent>
 
 </project>

@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.oiue</groupId>
@@ -7,29 +7,11 @@
 		<version>1.0.1</version>
 	</parent>
 	<groupId>org.oiue.services</groupId>
-	<artifactId>org.oiue.service.osgi.rpc</artifactId>
-
-	<packaging>bundle</packaging>
-
-	<name>OIUE service for OSGI RPC Service </name>
-	<description>A bundle that managed service and rpc servic by OSGI </description>
-
+	<artifactId>imports</artifactId>
+	
+	<url>http://maven.oiue.org</url>
+	<packaging>pom</packaging>
 	<dependencies>
-		<dependency>
-			<groupId>org.neo4j.driver</groupId>
-			<artifactId>neo4j-java-driver</artifactId>
-			<version>1.0.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.main</artifactId>
-			<version>5.4.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.configadmin</artifactId>
-			<version>1.8.8</version>
-		</dependency>
 		<dependency>
 			<groupId>org.oiue</groupId>
 			<artifactId>tools</artifactId>
@@ -37,8 +19,18 @@
 		</dependency>
 		<dependency>
 			<groupId>org.oiue.services</groupId>
-			<artifactId>org.oiue.service.cache.tree</artifactId>
-			<version>${cache.tree.version}</version>
+			<artifactId>org.oiue.service.osgi.rpc</artifactId>
+			<version>${osgi.rpc.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.oiue.services</groupId>
+			<artifactId>org.oiue.service.log</artifactId>
+			<version>${log.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.oiue.services</groupId>
+			<artifactId>org.oiue.service.system.analyzer</artifactId>
+			<version>${system.analyzer.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>ant-contrib</groupId>
@@ -52,11 +44,39 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<dependencyManagement>
+		<dependencies>
+		</dependencies>
+	</dependencyManagement>
+
+	<distributionManagement/>
 	<properties>
-		<project.activator>${artifactId}.Activator</project.activator>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<build>
 		<plugins>
+			<!-- 把依赖的jar包拷到lib目录下 -->
+			<!-- 
+<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/lib</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+ -->
 			<!-- 打包bundle文件为bundle.jar文件 -->
 			<plugin>
 				<groupId>org.apache.felix</groupId>
@@ -69,9 +89,11 @@
 						<Bundle-Name>${project.name}</Bundle-Name>
 						<Bundle-ManifestVersion>2</Bundle-ManifestVersion>
 						<Bundle-Description>${project.description}</Bundle-Description>
-						<Bundle-Vendor>www.oiue.org</Bundle-Vendor>
+						<Bundle-Vendor></Bundle-Vendor>
 						<Embed-Transitive>true</Embed-Transitive>
-						<Embed-Dependency>neo4j-java-driver;scope=compile|runtime</Embed-Dependency>
+						<Embed-Dependency>${project.dependency};scope=compile|runtime</Embed-Dependency>
+						<Import-Package>${project.import}</Import-Package>
+						<Export-Package>${project.export}</Export-Package>
 						<Embed-Directory>lib</Embed-Directory>
 						<Embed-StripGroup>true</Embed-StripGroup>
 					</instructions>
@@ -107,8 +129,7 @@
 						</goals>
 						<configuration>
 							<tasks>
-								<taskdef resource="net/sf/antcontrib/antcontrib.properties"
-									classpathref="maven.runtime.classpath" />
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpathref="maven.runtime.classpath" />
 								<if>
 									<contains string="${project.packaging}" substring="bundle" />
 									<then>

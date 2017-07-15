@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.oiue</groupId>
@@ -7,29 +7,11 @@
 		<version>1.0.1</version>
 	</parent>
 	<groupId>org.oiue.services</groupId>
-	<artifactId>org.oiue.service.osgi.rpc</artifactId>
-
-	<packaging>bundle</packaging>
-
-	<name>OIUE service for OSGI RPC Service </name>
-	<description>A bundle that managed service and rpc servic by OSGI </description>
-
+	<artifactId>services</artifactId>
+	
+	<url>http://maven.oiue.org</url>
+	<packaging>pom</packaging>
 	<dependencies>
-		<dependency>
-			<groupId>org.neo4j.driver</groupId>
-			<artifactId>neo4j-java-driver</artifactId>
-			<version>1.0.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.main</artifactId>
-			<version>5.4.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.configadmin</artifactId>
-			<version>1.8.8</version>
-		</dependency>
 		<dependency>
 			<groupId>org.oiue</groupId>
 			<artifactId>tools</artifactId>
@@ -37,8 +19,18 @@
 		</dependency>
 		<dependency>
 			<groupId>org.oiue.services</groupId>
-			<artifactId>org.oiue.service.cache.tree</artifactId>
-			<version>${cache.tree.version}</version>
+			<artifactId>org.oiue.service.osgi.rpc</artifactId>
+			<version>${osgi.rpc.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.oiue.services</groupId>
+			<artifactId>org.oiue.service.log</artifactId>
+			<version>${log.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.oiue.services</groupId>
+			<artifactId>org.oiue.service.system.analyzer</artifactId>
+			<version>${system.analyzer.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>ant-contrib</groupId>
@@ -52,8 +44,16 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<dependencyManagement>
+		<dependencies>
+		</dependencies>
+	</dependencyManagement>
+
+	<distributionManagement>
+		<!-- <repository> <id>releases</id> <url>http://10.182.192.212:8081/nexus/content/repositories/releases</url> </repository> <snapshotRepository> <id>snapshots</id> <url>http://10.182.192.212:8081/nexus/content/repositories/snapshots</url> </snapshotRepository> -->
+	</distributionManagement>
 	<properties>
-		<project.activator>${artifactId}.Activator</project.activator>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<build>
 		<plugins>
@@ -69,11 +69,7 @@
 						<Bundle-Name>${project.name}</Bundle-Name>
 						<Bundle-ManifestVersion>2</Bundle-ManifestVersion>
 						<Bundle-Description>${project.description}</Bundle-Description>
-						<Bundle-Vendor>www.oiue.org</Bundle-Vendor>
-						<Embed-Transitive>true</Embed-Transitive>
-						<Embed-Dependency>neo4j-java-driver;scope=compile|runtime</Embed-Dependency>
-						<Embed-Directory>lib</Embed-Directory>
-						<Embed-StripGroup>true</Embed-StripGroup>
+						<Bundle-Vendor></Bundle-Vendor>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -107,8 +103,7 @@
 						</goals>
 						<configuration>
 							<tasks>
-								<taskdef resource="net/sf/antcontrib/antcontrib.properties"
-									classpathref="maven.runtime.classpath" />
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpathref="maven.runtime.classpath" />
 								<if>
 									<contains string="${project.packaging}" substring="bundle" />
 									<then>

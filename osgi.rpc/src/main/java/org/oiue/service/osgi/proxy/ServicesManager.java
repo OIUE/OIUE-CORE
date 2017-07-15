@@ -1,5 +1,10 @@
 package org.oiue.service.osgi.proxy;
 
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.rmi.Naming;
+import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Dictionary;
@@ -12,21 +17,23 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.oiue.service.cache.tree.CacheTreeService;
 import org.oiue.service.osgi.FrameActivator;
-
+import org.oiue.service.osgi.rpc.RPCService;
+import org.oiue.service.osgi.rpc.RPCServiceImpl;
+import org.oiue.tools.string.StringUtil;
 import org.osgi.framework.BundleContext;
 
 public class ServicesManager {
 
-	private static Map<String, Object> allService = null;
+	private static Map<String, Object> allService = null;   //所有服务
 	private static Map<FrameActivator, List<Object>> relationService = null;
 	private static Set<String> allRelationService = null;
-	private static Set<String> allStartService = null;
+	private static Map<String, Object> allStartService = null;
 
 	static {
 		allService = new ConcurrentHashMap<>();
 		relationService = new ConcurrentHashMap<>();
 		allRelationService = new CopyOnWriteArraySet<>();
-		allStartService = new CopyOnWriteArraySet<>();
+		allStartService = new ConcurrentHashMap<>();
 	}
 
 	public static void addAllARS(Collection<? extends String> c) {
@@ -37,12 +44,8 @@ public class ServicesManager {
 		relationService.put(serviceName, relation);
 	}
 
-	public static void addAllASS(Collection<? extends String> c) {
-		allStartService.addAll(c);
-	}
-
 	public static Set<String> getStartService() {
-		return allStartService;
+		return allStartService.keySet();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -51,6 +54,9 @@ public class ServicesManager {
 	}
 
 	public static void putService(String key, Object o) {
+		if(allStartService.containsKey(key))
+			return;
+		allStartService.put(key, o);
 		allService.put(key, o);
 	}
 
@@ -67,17 +73,48 @@ public class ServicesManager {
 	}
 
 	public static Set<String> getAllStartService() {
-		return allStartService;
+		return allStartService.keySet();
 	}
 
 	public static Set<String> getRpcServices() {
 		Set<String> allRelationServiceTmp = new HashSet<>();
 		allRelationServiceTmp.addAll(allRelationService);
-		allRelationServiceTmp.removeAll(allStartService);
+		allRelationServiceTmp.removeAll(allStartService.keySet());
 		return allRelationServiceTmp;
 	}
 
 	public static void startRPC(CacheTreeService cacheTreeService, BundleContext context, Dictionary<String, ?> config) {
+
+		String local = config.get("localIp") + "";
+		String path = config.get("rootPath") + "";
+		int rpcPort = Integer.valueOf(config.get("rpcPort") + "");
+		if (StringUtil.isEmptys(path) || StringUtil.isEmptys(local)) {
+			throw new RuntimeException("config localURL and rootPath not null!");
+		}
+		try {
+			path = path.endsWith("/") ? path : path + "/";
+
+			URLClassLoader uc = (URLClassLoader) ClassLoader.getSystemClassLoader();
+			Method add = URLClassLoader.class.getDeclaredMethod("addURL", new Class[] { URL.class });
+			add.setAccessible(true);
+			add.invoke(uc, new Object[] { RPCService.class.getProtectionDomain().getCodeSource().getLocation() });
+
+
+			LocateRegistry.createRegistry(rpcPort);
+			RPCService rpc = new RPCServiceImpl();
+			String url = "rmi://" + local + ":" + rpcPort + "/RPCService";
+			Naming.rebind(url, rpc);
+
+			ServicesManager.registerRPC(cacheTreeService, path, local);
+
+			System.out.println("start all service:" + ServicesManager.getAllService());
+			System.out.println("start all local service:" + ServicesManager.getAllStartService());
+			System.out.println("start all relation service:" + ServicesManager.getRelationService());
+
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+
 		/*
 		 * 对于本地需要依赖却未部署的服务，启用远程调用
 		 */
@@ -97,6 +134,7 @@ public class ServicesManager {
 
 	public static void registerRPC(CacheTreeService cacheTreeService, String path, String local) {
 		List<Exception> es = new ArrayList<>();
+		cacheTreeService.createTemp(path + "ServerStatus/" + local.replace(".", "_"), local);
 		for (String serviceName : ServicesManager.getStartService()) {
 			try {
 				cacheTreeService.createTemp(path + "Services/" + serviceName.replace(".", "_"), local);

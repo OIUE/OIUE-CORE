@@ -2,7 +2,6 @@ package org.oiue.service.osgi;
 
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -26,7 +25,6 @@ public abstract class FrameActivator implements BundleActivator, ServiceTrackerC
 	private boolean isProxy = false;
 
 	private Set<String> classNameSet = new HashSet<>();
-	private Hashtable<String, Object> services = new Hashtable<String, Object>();
 	private MulitServiceTrackerCustomizer trackerCustomizer = null;
 	private ServiceTracker tracker;
 	private Set<ServiceRegistration<?>> regConfigurator = new HashSet<>();
@@ -51,8 +49,6 @@ public abstract class FrameActivator implements BundleActivator, ServiceTrackerC
 			trackerCustomizer.removedService();
 			trackerCustomizer.initialize=false;
 		}
-		if (services != null)
-			services.clear();
 		if (tracker != null)
 			tracker.close();
 		trackerCustomizer = null;
@@ -65,7 +61,7 @@ public abstract class FrameActivator implements BundleActivator, ServiceTrackerC
 		if (!classNameSet.contains(classname)) {
 			throw new RuntimeException("get service exception, class[" + c + "] not in classNames.");
 		}
-		T service = ((T) services.get(classname));
+		T service = ((T) ServicesManager.getServiceByName(classname));
 		return service;
 	}
 
@@ -89,13 +85,12 @@ public abstract class FrameActivator implements BundleActivator, ServiceTrackerC
 				filterString.append(")");
 				tracker = new ServiceTracker(context, context.createFilter(filterString.toString()), this);
 				tracker.open();
-				ServicesManager.addAllARS(classNameSet);
 			} else {
 				synchronized (this) {
 					if (!trackerCustomizer.initialize) {
 						trackerCustomizer.addingService();
 						Dictionary<String, String> props = new Hashtable<>();
-						props.put("service.pid", this.getClass().getName());
+						props.put("service.pid", this.getClass().getName().split("\\$")[0]);
 						synchronized (regConfigurator) {
 							regConfigurator.add(context.registerService(ManagedService.class.getName(), trackerCustomizer, props));
 						}
@@ -103,6 +98,7 @@ public abstract class FrameActivator implements BundleActivator, ServiceTrackerC
 					}
 				}
 			}
+			ServicesManager.addAllARS(classNameSet);
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
@@ -113,20 +109,13 @@ public abstract class FrameActivator implements BundleActivator, ServiceTrackerC
 		try {
 			Object obj = context.getService(reference);
 			String classNames[] = ((String[]) reference.getProperty("objectClass"));
-
-			ServicesManager.addAllASS(Arrays.asList(classNames));
-			for (String e : classNames) {
-				if (classNameSet.contains(e)) {
-					services.put(e, obj);
-				}
-			}
-
-			if (services.size() == classNameSet.size()) {
+			ServicesManager.putService(classNames[0], obj);
+			if (ServicesManager.getAllStartService().containsAll(classNameSet)) {
 				synchronized (this) {
 					if (!trackerCustomizer.initialize) {
 						trackerCustomizer.addingService();
 						Dictionary<String, String> props = new Hashtable<>();
-						props.put("service.pid", this.getClass().getName());
+						props.put("service.pid", this.getClass().getName().split("\\$")[0]);
 						synchronized (regConfigurator) {
 							regConfigurator.add(context.registerService(ManagedService.class.getName(), trackerCustomizer, props));
 						}
@@ -150,13 +139,18 @@ public abstract class FrameActivator implements BundleActivator, ServiceTrackerC
 	public final void registerService(Class c, Object object) {
 		try {
 			String name = c.getName();
-			synchronized (regConfigurator) {
-				regConfigurator.add(context.registerService(name, object, null));
-			}
 			if (isProxy && !c.getName().startsWith("org.oiue.service.odp")) {
-				ServicesManager.putService(name, Proxy.newProxyInstance(c.getClassLoader(), c.getInterfaces(), new ServiceProxy(object)));
-			} else
+				object =Proxy.newProxyInstance(c.getClassLoader(), c.getInterfaces(), new ServiceProxy(object));
 				ServicesManager.putService(name, object);
+				synchronized (regConfigurator) {
+					regConfigurator.add(context.registerService(name, object, null));
+				}
+			} else{
+				ServicesManager.putService(name, object);
+				synchronized (regConfigurator) {
+					regConfigurator.add(context.registerService(name, object, null));
+				}
+			}
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}

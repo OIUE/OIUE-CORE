@@ -1,7 +1,6 @@
 
 
 import java.lang.reflect.Proxy;
-import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -124,14 +123,6 @@ public abstract class FrameActivator implements BundleActivator, ServiceTrackerC
 	public final Object addingService(ServiceReference reference) {
 		try {
 			Object obj = context.getService(reference);
-			String classNames[] = ((String[]) reference.getProperty("objectClass"));
-
-			ServicesManager.addAllASS(Arrays.asList(classNames));
-			for (String e : classNames) {
-				if (classNameSet.contains(e)) {
-					services.put(e, obj);
-				}
-			}
 
 			if (services.size() == classNameSet.size()) {
 				synchronized (this) {
