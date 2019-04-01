@@ -7,16 +7,16 @@ import org.neo4j.driver.v1.Session;
 
 public class GraphManager {
 	static Session session = null;
-
-	private static void connection(){
+	
+	private static void connection() {
 		Driver driver = GraphDatabase.driver("bolt://localhost", AuthTokens.basic("neo4j", "root"));
 		session = driver.session();
 	}
-
-	public static Session getSession(){
-		if(session == null)
+	
+	public static Session getSession() {
+		if (session == null)
 			connection();
 		return session;
 	}
-
+	
 }

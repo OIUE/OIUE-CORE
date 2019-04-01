@@ -1,9 +1,10 @@
 package org.oiue.service.system.analyzer;
 
-import java.util.Dictionary;
+import java.util.Map;
 
 @SuppressWarnings("rawtypes")
 public interface AnalyzerService {
-	public void updateProps(Dictionary props);
+	public void updateProps(Map props);
+	
 	public TimeLogger getLogger(Class c);
 }

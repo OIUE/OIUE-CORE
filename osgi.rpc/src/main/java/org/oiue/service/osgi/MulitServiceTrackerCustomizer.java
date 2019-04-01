@@ -1,13 +1,13 @@
 package org.oiue.service.osgi;
 
-import java.util.Dictionary;
+import java.util.Map;
 
-import org.osgi.service.cm.ManagedService;
-
-public abstract class MulitServiceTrackerCustomizer implements ManagedService{
+public abstract class MulitServiceTrackerCustomizer  {
 	public abstract void addingService();
+	
 	public abstract void removedService();
-	public abstract void updated(final Dictionary<String, ?> props);
+	
+	public abstract void updatedConf(final Map<String, ?> props);
 	
 	public boolean initialize = false;
 }

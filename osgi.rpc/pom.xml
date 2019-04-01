@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.oiue</groupId>
 		<artifactId>oiue</artifactId>
-		<version>1.0.1</version>
+		<version>1.1.0-SNAPSHOT</version>
 	</parent>
 	<groupId>org.oiue.services</groupId>
 	<artifactId>org.oiue.service.osgi.rpc</artifactId>
@@ -21,9 +21,9 @@
 			<version>1.0.3</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.main</artifactId>
-			<version>5.4.0</version>
+			<groupId>org.oiue</groupId>
+			<artifactId>oiue.main</artifactId>
+			<version>1.1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.felix</groupId>
@@ -53,7 +53,7 @@
 		</dependency>
 	</dependencies>
 	<properties>
-		<project.activator>${artifactId}.Activator</project.activator>
+		<project.activator>${project.artifactId}.Activator</project.activator>
 	</properties>
 	<build>
 		<plugins>
@@ -80,7 +80,6 @@
 			<!-- 打包source文件为jar文件 -->
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>2.1</version>
 				<configuration>
 					<attach>true</attach>
 					<encoding>UTF-8</encoding>
@@ -95,6 +94,7 @@
 				</executions>
 			</plugin>
 			<!-- 将打包的bundle文件拷贝到项目的bundle目录 -->
+			<!-- 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
@@ -112,7 +112,7 @@
 								<if>
 									<contains string="${project.packaging}" substring="bundle" />
 									<then>
-										<copy todir="${project.build.exportdir}">
+										<copy todir="${project.build.exportdir}/bundle">
 											<fileset dir="${project.basedir}/target">
 												<include name="*.?.jar" />
 											</fileset>
@@ -124,6 +124,7 @@
 					</execution>
 				</executions>
 			</plugin>
+ 			-->
 		</plugins>
 	</build>
 </project>

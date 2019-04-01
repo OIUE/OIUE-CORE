@@ -4,5 +4,6 @@ import java.util.List;
 
 public interface ChangeEvent {
 	public String getName();
+	
 	public void change(List<String> data);
 }
