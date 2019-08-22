@@ -49,7 +49,7 @@ public abstract class FrameActivator implements BundleActivator, ServiceTrackerC
 					trackerCustomizer.updatedConf(confm);
 
 				} catch (Throwable e) {
-					System.out.println(trackerCustomizer.getClass().getName());
+					System.out.println("trackerCustomizer.getClass().getName():" + trackerCustomizer.getClass().getName());
 					e.printStackTrace();
 					throw new RuntimeException(e);
 				}
@@ -190,7 +190,7 @@ public abstract class FrameActivator implements BundleActivator, ServiceTrackerC
 	public final <T> T getServiceForce(String serviceName) {
 		return (T) ServicesManager.getServiceByName(serviceName);
 	}
-	
+
 	class TaskThread implements Callable<Map<Object, Object>> {
 		Map per = null;
 		Thread t;
@@ -203,6 +203,6 @@ public abstract class FrameActivator implements BundleActivator, ServiceTrackerC
 		public Map<Object, Object> call() throws Exception {
 			return null;
 		}
-		
+
 	}
 }

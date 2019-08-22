@@ -12,10 +12,25 @@
 	<url>http://maven.oiue.org</url>
 	<packaging>pom</packaging>
 	<dependencies>
+<!-- 		<dependency>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>build-helper-maven-plugin</artifactId>
+			<version>1.9.1</version>
+			<type>maven-plugin</type>
+		</dependency> -->
 		<dependency>
 			<groupId>org.oiue</groupId>
 			<artifactId>tools</artifactId>
-			<version>${tools.version}</version>
+			<version>${tools.version}</version><exclusions>
+				<exclusion>
+					<artifactId>com.github.junrar</artifactId>
+					<groupId>junrar</groupId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.commons</groupId>
+					<artifactId>commons-vfs2</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.oiue.services</groupId>
